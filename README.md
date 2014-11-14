@@ -1,3 +1,8 @@
+APW fork
+========
+
+Fork of [APW](http://github.com/mokasin/apw) with percentages, progressbar vertical and themed.
+
 Awesome Pulseaudio Widget
 =========================
 
