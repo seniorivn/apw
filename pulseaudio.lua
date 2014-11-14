@@ -32,7 +32,7 @@ function pulseaudio:Create()
 
 	o.Volume = 0     -- volume of default sink
 	o.Mute = false   -- state of the mute flag of the default sink
-	o.Perc = 0
+	o.Perc = 0	 -- percentage of volume of default sink
 
 	-- retreive current state from Pulseaudio
 	pulseaudio.UpdateState(o)
@@ -42,10 +42,7 @@ end
 
 function pulseaudio:UpdateState()
 	local f = io.popen(cmd .. " dump")
-	--local perc = io.popen(cmd_perc)
-	--self.Perc = perc:read()
-	--perc:close()
-	--print("Volume now"..self.Perc) 
+	
 
 
 	-- if the cmd can't be found
@@ -70,6 +67,7 @@ function pulseaudio:UpdateState()
 		end
 	end
 
+	-- convert volume to percentages of volume
 	v = self.Volume*100
 	v, x = math.modf(v)
 	print(v..x)
