@@ -20,7 +20,7 @@ local margin_right  = 0         -- right margin in pixels of progressbar
 local margin_left   = 0         -- left margin in pixels of progressbar 
 local margin_top    = 0         -- top margin in pixels of progressbar 
 local margin_bottom = 0         -- bottom margin in pixels of progressbar  
-local step          = 0.05      -- stepsize for volume change (ranges from 0 to 1)
+local step          = 0.01      -- stepsize for volume change (ranges from 0 to 1)
 local color         = '#1a4b5c'--'#698f1e' -- foreground color of progessbar
 local color_bg      = '#0a0f14'--'#33450f' -- background color
 local color_mute    = '#be2a15' -- foreground color when muted
@@ -73,7 +73,7 @@ end
 
 local function _update()
 	pulseBar:set_value(p.Volume)
-	text= p.Perc 
+	text= p.Perc or 0 
 	pulseBox:set_text(' '..text..' ')
 	pulseWidget.setColor(p.Mute)
 end
