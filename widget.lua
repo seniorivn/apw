@@ -27,7 +27,7 @@ local color_bg      = '#0a0f14'--'#33450f' -- background color
 local color_mute    = '#be2a15' -- foreground color when muted
 local color_bg_mute = color_bg --'#532a15' -- background color when muted
 local mixer         = 'pavucontrol' -- mixer command
-local veromix	    = 'veromix'
+local veromix	    = 'veromix' --veromix command
 
 -- End of configuration
 
