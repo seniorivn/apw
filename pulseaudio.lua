@@ -42,9 +42,9 @@ end
 
 function pulseaudio:UpdateState()
 	local f = io.popen(cmd .. " dump")
-	local perc = io.popen(cmd_perc)
-	self.Perc = perc:read()
-	perc:close()
+	--local perc = io.popen(cmd_perc)
+	--self.Perc = perc:read()
+	--perc:close()
 	--print("Volume now"..self.Perc) 
 
 
@@ -68,6 +68,15 @@ function pulseaudio:UpdateState()
 		if sink == default_sink then
 			self.Volume = tonumber(value) / 0x10000
 		end
+	end
+
+	v = self.Volume*100
+	v, x = math.modf(v)
+	print(v..x)
+	if x > 0.5 then
+		self.Perc = v.."%"
+	else
+		self.Perc = (v+1).."%"
 	end
 
 	-- retreive mute state of default sink

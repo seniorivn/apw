@@ -47,8 +47,8 @@ pulseBar.step = step
 pulseBar.minstep = minstep
 local left_layout = wibox.layout.fixed.horizontal()
 widget = wibox.widget.background()
-widget:set_bgimage(beautiful.widget_display)
 widget:set_widget(pulseBox)
+widget:set_bgimage(beautiful.widget_display)
 
     
 left_layout:add(pulseBar)
@@ -95,7 +95,7 @@ function pulseWidget.Down()
 end	
 
 function pulseWidget.minUp()
-	p:SetVolume(p.Volume + pulseBar.step)
+	p:SetVolume(p.Volume + pulseBar.minstep)
 	if p.Mute then
 		pulseWidget.ToggleMute()
 	end
@@ -103,7 +103,7 @@ function pulseWidget.minUp()
 end	
 
 function pulseWidget.minDown()
-	p:SetVolume(p.Volume - pulseBar.step)
+	p:SetVolume(p.Volume - pulseBar.minstep)
 	if p.Mute then
 		pulseWidget.ToggleMute()
 	end
@@ -134,7 +134,6 @@ end
 function runorkill(cmd)
 	
 	awful.util.spawn_with_shell("/home/ivn/scripts/runorkill.sh "..cmd)
-	awful.util.spawn_with_shell( mixer )
 end
 
 
