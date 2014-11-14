@@ -133,7 +133,7 @@ end
 
 function runorkill(cmd)
 	
-	awful.util.spawn_with_shell("/home/ivn/scripts/runorkill.sh "..cmd)
+	awful.util.spawn_with_shell("./runorkill.sh "..cmd)
 end
 
 

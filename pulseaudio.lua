@@ -21,7 +21,6 @@ local pulseaudio = {}
 
 
 local cmd = "pacmd"
-local cmd_perc = "pacmd list-sinks | grep 'volume: front-left:' |  awk '{print $5}'"
 
 local default_sink = ""
 
@@ -70,7 +69,6 @@ function pulseaudio:UpdateState()
 	-- convert volume to percentages of volume
 	v = self.Volume*100
 	v, x = math.modf(v)
-	print(v..x)
 	if x > 0.5 then
 		self.Perc = v.."%"
 	else
