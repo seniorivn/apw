@@ -20,7 +20,8 @@ local margin_right  = 0         -- right margin in pixels of progressbar
 local margin_left   = 0         -- left margin in pixels of progressbar 
 local margin_top    = 0         -- top margin in pixels of progressbar 
 local margin_bottom = 0         -- bottom margin in pixels of progressbar  
-local step          = 0.01      -- stepsize for volume change (ranges from 0 to 1)
+local step          = 0.05      -- stepsize for volume change (ranges from 0 to 1)
+local minstep	    = 0.01	-- minimum stepsize for volume
 local color         = '#1a4b5c'--'#698f1e' -- foreground color of progessbar
 local color_bg      = '#0a0f14'--'#33450f' -- background color
 local color_mute    = '#be2a15' -- foreground color when muted
@@ -43,6 +44,7 @@ local pulseBox = wibox.widget.textbox(1)
 pulseBar:set_width(width)
 pulseBar:set_vertical(true)
 pulseBar.step = step
+pulseBar.minstep = minstep
 local left_layout = wibox.layout.fixed.horizontal()
 widget = wibox.widget.background()
 widget:set_bgimage(beautiful.widget_display)
@@ -84,14 +86,27 @@ end
 
 function pulseWidget.Up()
 	p:SetVolume(p.Volume + pulseBar.step)
+	_update()
+end	
+
+function pulseWidget.Down()
+	p:SetVolume(p.Volume - pulseBar.step)
+	_update()
+end	
+
+function pulseWidget.minUp()
+	p:SetVolume(p.Volume + pulseBar.step)
 	if p.Mute then
 		pulseWidget.ToggleMute()
 	end
 	_update()
 end	
 
-function pulseWidget.Down()
+function pulseWidget.minDown()
 	p:SetVolume(p.Volume - pulseBar.step)
+	if p.Mute then
+		pulseWidget.ToggleMute()
+	end
 	_update()
 end	
 
@@ -129,8 +144,8 @@ pulseWidget:buttons(awful.util.table.join(
 		awful.button({ }, 12, pulseWidget.ToggleMute),
 		awful.button({ }, 2, pulseWidget.ToggleMute),
 		awful.button({ }, 3, pulseWidget.LaunchMixer),
-		awful.button({ }, 4, pulseWidget.Up),
-		awful.button({ }, 5, pulseWidget.Down)
+		awful.button({ }, 4, pulseWidget.minUp),
+		awful.button({ }, 5, pulseWidget.minDown)
 	)
 )
 
