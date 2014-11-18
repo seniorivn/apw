@@ -2,6 +2,8 @@ APW fork
 ========
 Fork of [APW](http://github.com/mokasin/apw) with percentages![](http://i.imgur.com/5VR2kFr.png), progressbar vertical and themed.
 
+mouse clicks spawns: veromix and pavucontrol by left and right buttons
+
 
 Awesome Pulseaudio Widget
 =========================
