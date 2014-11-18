@@ -18,12 +18,12 @@
 local width         = 10        -- width in pixels of progressbar
 local margin_right  = 0         -- right margin in pixels of progressbar 
 local margin_left   = 0         -- left margin in pixels of progressbar 
-local margin_top    = 0         -- top margin in pixels of progressbar 
-local margin_bottom = 0         -- bottom margin in pixels of progressbar  
+local margin_top    = 1         -- top margin in pixels of progressbar 
+local margin_bottom = 5         -- bottom margin in pixels of progressbar  
 local step          = 0.05      -- stepsize for volume change (ranges from 0 to 1)
 local minstep	    = 0.01	-- minimum stepsize for volume
 local color         = '#1a4b5c'--'#698f1e' -- foreground color of progessbar
-local color_bg      = '#0a0f14'--'#33450f' -- background color
+local color_bg      = '#0F1419'--'#33450f' -- background color
 local color_mute    = '#be2a15' -- foreground color when muted
 local color_bg_mute = color_bg --'#532a15' -- background color when muted
 local mixer         = 'pavucontrol' -- mixer command
@@ -45,17 +45,10 @@ pulseBar:set_width(width)
 pulseBar:set_vertical(true)
 pulseBar.step = step
 pulseBar.minstep = minstep
-local left_layout = wibox.layout.fixed.horizontal()
-widget = wibox.widget.background()
-widget:set_widget(pulseBox)
-widget:set_bgimage(beautiful.widget_display)
-
     
-left_layout:add(pulseBar)
-left_layout:add(widget)
 
 
-local pulseWidget = wibox.layout.margin(left_layout, margin_right, margin_left, margin_top, margin_bottom)
+local pulseWidget = wibox.layout.margin(pulseBar, margin_right, margin_left, margin_top, margin_bottom)
 
 -- default colors overridden by Beautiful theme
 color = beautiful.apw_fg_color or color
@@ -75,8 +68,8 @@ end
 
 local function _update()
 	pulseBar:set_value(p.Volume)
-	text= p.Perc or 0 
-	pulseBox:set_text(' '..text..' ')
+	text= p.Perc 
+	pulseBox:set_text(''..text..'')
 	pulseWidget.setColor(p.Mute)
 end
 
@@ -133,12 +126,16 @@ end
 
 function runorkill(cmd)
 	
-	awful.util.spawn_with_shell("./runorkill.sh "..cmd)
+	awful.util.spawn_with_shell("$HOME/.config/awesome/apw/runorkill.sh "..cmd)
+end
+
+function pulseWidget.getTextBox()
+	return pulseBox
 end
 
 
 -- register mouse button actions
-pulseWidget:buttons(awful.util.table.join(
+buttonsTable = awful.util.table.join(
 		awful.button({ }, 1, pulseWidget.LaunchVeromix),
 		awful.button({ }, 12, pulseWidget.ToggleMute),
 		awful.button({ }, 2, pulseWidget.ToggleMute),
@@ -146,7 +143,8 @@ pulseWidget:buttons(awful.util.table.join(
 		awful.button({ }, 4, pulseWidget.minUp),
 		awful.button({ }, 5, pulseWidget.minDown)
 	)
-)
+pulseWidget:buttons(buttonsTable)
+pulseBox:buttons(buttonsTable)
 
 
 -- initialize

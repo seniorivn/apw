@@ -68,12 +68,8 @@ function pulseaudio:UpdateState()
 
 	-- convert volume to percentages of volume
 	v = self.Volume*100
-	v, x = math.modf(v)
-	if x > 0.5 then
-		self.Perc = v.."%"
-	else
-		self.Perc = (v+1).."%"
-	end
+	print(v)
+	self.Perc = round(v).."%"
 
 	-- retreive mute state of default sink
 	local m
@@ -122,6 +118,10 @@ function pulseaudio:ToggleMute()
 	self:UpdateState()
 end
 
+function round(num,idp)
+	local mult = 10^(idp or 0)
+	return math.floor(num*mult+0.5)/mult
+end
 
 return pulseaudio
 
