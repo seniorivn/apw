@@ -27,7 +27,9 @@ local color_bg      = '#0F1419'--'#33450f' -- background color
 local color_mute    = '#be2a15' -- foreground color when muted
 local color_bg_mute = color_bg --'#532a15' -- background color when muted
 local mixer         = 'pavucontrol' -- mixer command
+local mixer_class   = 'Pavucontrol'
 local veromix	    = 'veromix' --veromix command
+local veromix_class = 'veromix'
 
 -- End of configuration
 
@@ -115,18 +117,63 @@ function pulseWidget.Update()
 end
 
 function pulseWidget.LaunchMixer()
-	runorkill(mixer)
+	run_or_kill(mixer,  { class = mixer_class })
+	_update()
 end
 
 function pulseWidget.LaunchVeromix()
-	runorkill(veromix)
+	run_or_kill(veromix, { class = veromix_class })
 	_update()	
 end
 
 
-function runorkill(cmd)
-	
-	awful.util.spawn_with_shell("$HOME/.config/awesome/apw/runorkill.sh "..cmd)
+
+function run_or_kill(cmd, properties)
+   local clients = client.get()
+   local focused = awful.client.next(0)
+   local findex = 0
+   local matched_clients = {}
+   local n = 0
+   for i, c in pairs(clients) do
+      --make an array of matched clients
+      if match(properties, c) then
+         n = n + 1
+         matched_clients[n] = c
+         if c == focused then
+            findex = n
+         end
+      end
+   end
+   if n > 0 then
+      local c = matched_clients[1]
+      -- if the focused window matched switch focus to next in list
+      if 0 < findex and findex < n then
+         c = matched_clients[findex+1]
+      end
+      local ctags = c:tags()
+      if #ctags == 0 then
+         -- ctags is empty, show client on current tag
+         local curtag = awful.tag.selected()
+         awful.client.movetotag(curtag, c)
+      else
+         -- Otherwise, pop to first tag client is visible on
+         awful.tag.viewonly(ctags[1])
+      end
+      -- And then kill the client
+      c:kill()
+      return
+   end
+   awful.util.spawn(cmd)
+end
+
+-- Returns true if all pairs in table1 are present in table2
+function match (table1, table2)
+   for k, v in pairs(table1) do
+      if table2[k] ~= v and not table2[k]:find(v) then
+         return false
+      end
+   end
+   return true
 end
 
 function pulseWidget.getTextBox()
