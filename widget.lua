@@ -16,20 +16,21 @@
 
 local awful = require("awful")
 local wibox = require("wibox")
+local naughty = require("naughty")
 local beautiful = require("beautiful")
 local pulseaudio = require("apw.pulseaudio")
 
 
 -- Configuration variables
-local width         = 10        -- width in pixels of progressbar
+local width         = 6        -- width in pixels of progressbar
 local margin_right  = 0         -- right margin in pixels of progressbar 
 local margin_left   = 0         -- left margin in pixels of progressbar 
-local margin_top    = 1         -- top margin in pixels of progressbar 
-local margin_bottom = 5         -- bottom margin in pixels of progressbar  
+local margin_top    = 2         -- top margin in pixels of progressbar 
+local margin_bottom = 2         -- bottom margin in pixels of progressbar  
 local step          = 0.05      -- stepsize for volume change (ranges from 0 to 1)
 local minstep	    = 0.01	-- minimum stepsize for volume
-local color         = '#1a4b5c'--'#698f1e' -- foreground color of progessbar
-local color_bg      = '#0F1419'--'#33450f' -- background color
+local color         = '#CCCCCC'--'#698f1e' -- foreground color of progessbar
+local color_bg      = '#1A1A1A'--'#33450f' -- background color
 local color_mute    = '#be2a15' -- foreground color when muted
 local color_bg_mute = color_bg --'#532a15' -- background color when muted
 local mixer         = 'pavucontrol' -- mixer command
@@ -51,6 +52,7 @@ width = beautiful.apw_width or width
 
 -- End of configuration
 
+local notid = 0
 local p = pulseaudio:Create()
 
 local pulseBar = awful.widget.progressbar()
@@ -75,7 +77,7 @@ end
 
 local function _update()
 	pulseBar:set_value(p.Volume)
-	text= p.Perc 
+	text = p.Perc 
 	pulseBox:set_text(''..text..'')
 	pulseWidget.setColor(p.Mute)
 end
@@ -86,11 +88,13 @@ end
 
 function pulseWidget.Up()
 	p:SetVolume(p.Volume + pulseBar.step)
+	notid = naughty.notify({ text = 'Volume: '..p.Perc, replaces_id = notid }).id
 	_update()
 end	
 
 function pulseWidget.Down()
 	p:SetVolume(p.Volume - pulseBar.step)
+        notid = naughty.notify({ text = 'Volume: '..p.Perc, replaces_id = notid }).id
 	_update()
 end	
 
@@ -113,6 +117,10 @@ end
 
 function pulseWidget.ToggleMute()
 	p:ToggleMute()
+	local msg = {}
+	msg[false] = "Unmuted"
+	msg[true]  = "Muted"
+        notid = naughty.notify({ text = msg[p.Mute]..': '..p.Perc, replaces_id = notid }).id
 	_update()
 end
 
@@ -188,16 +196,14 @@ end
 
 -- register mouse button actions
 buttonsTable = awful.util.table.join(
-		awful.button({ }, 1, pulseWidget.LaunchVeromix),
+		awful.button({ }, 1,  pulseWidget.LaunchVeromix),
 		awful.button({ }, 12, pulseWidget.ToggleMute),
-		awful.button({ }, 2, pulseWidget.ToggleMute),
-		awful.button({ }, 3, pulseWidget.LaunchMixer),
-		awful.button({ }, 4, pulseWidget.minUp),
-		awful.button({ }, 5, pulseWidget.minDown)
+		awful.button({ }, 2,  pulseWidget.ToggleMute),
+		awful.button({ }, 3,  pulseWidget.LaunchMixer),
+		awful.button({ }, 4,  pulseWidget.minUp),
+		awful.button({ }, 5,  pulseWidget.minDown)
 	)
 pulseWidget:buttons(buttonsTable)
-pulseBox:buttons(buttonsTable)
-
 
 -- initialize
 _update()

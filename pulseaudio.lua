@@ -68,8 +68,9 @@ function pulseaudio:UpdateState()
 
 	-- convert volume to percentages of volume
 	v = self.Volume*100
-	print(v)
-	self.Perc = round(v).."%"
+	--print(v)
+	v = round(v)
+	self.Perc = v.."%"
 
 	-- retreive mute state of default sink
 	local m
@@ -90,8 +91,8 @@ end
 
 -- Sets the volume of the default sink to vol from 0 to 1.
 function pulseaudio:SetVolume(vol)
-	if vol > 1.5 then
-		vol = 1.5
+	if vol > 1.0 then
+		vol = 1.0
 	end
 
 	if vol < 0 then
