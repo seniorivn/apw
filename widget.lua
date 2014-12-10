@@ -57,13 +57,17 @@ local p = pulseaudio:Create()
 
 local pulseBar = awful.widget.progressbar()
 local pulseBox = wibox.widget.textbox(1)
+local pulseLayout = wibox.layout.fixed.horizontal()
 
 pulseBar:set_width(width)
 pulseBar:set_vertical(true)
 pulseBar.step = step
 pulseBar.minstep = minstep
+
+pulseLayout:add(pulseBox)
+pulseLayout:add(pulseBar)
     
-local pulseWidget = wibox.layout.margin(pulseBar, margin_right, margin_left, margin_top, margin_bottom)
+local pulseWidget = wibox.layout.margin(pulseLayout, margin_right, margin_left, margin_top, margin_bottom)
 
 function pulseWidget.setColor(mute)
 	if mute then
