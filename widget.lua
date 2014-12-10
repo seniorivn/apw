@@ -22,15 +22,15 @@ local pulseaudio = require("apw.pulseaudio")
 
 
 -- Configuration variables
-local width         = 6        -- width in pixels of progressbar
+local width         = 10        -- width in pixels of progressbar
 local margin_right  = 0         -- right margin in pixels of progressbar 
 local margin_left   = 0         -- left margin in pixels of progressbar 
-local margin_top    = 2         -- top margin in pixels of progressbar 
-local margin_bottom = 2         -- bottom margin in pixels of progressbar  
+local margin_top    = 1         -- top margin in pixels of progressbar 
+local margin_bottom = 5         -- bottom margin in pixels of progressbar  
 local step          = 0.05      -- stepsize for volume change (ranges from 0 to 1)
 local minstep	    = 0.01	-- minimum stepsize for volume
-local color         = '#CCCCCC'--'#698f1e' -- foreground color of progessbar
-local color_bg      = '#1A1A1A'--'#33450f' -- background color
+local color         = '#1a4b5c'--'#698f1e' -- foreground color of progessbar
+local color_bg      = '#0F1419'--'#33450f' -- background color
 local color_mute    = '#be2a15' -- foreground color when muted
 local color_bg_mute = color_bg --'#532a15' -- background color when muted
 local mixer         = 'pavucontrol' -- mixer command
@@ -57,17 +57,13 @@ local p = pulseaudio:Create()
 
 local pulseBar = awful.widget.progressbar()
 local pulseBox = wibox.widget.textbox(1)
-local pulseLayout = wibox.layout.fixed.horizontal()
 
 pulseBar:set_width(width)
 pulseBar:set_vertical(true)
 pulseBar.step = step
 pulseBar.minstep = minstep
 
-pulseLayout:add(pulseBox)
-pulseLayout:add(pulseBar)
-    
-local pulseWidget = wibox.layout.margin(pulseLayout, margin_right, margin_left, margin_top, margin_bottom)
+local pulseWidget = wibox.layout.margin(pulseBar, margin_right, margin_left, margin_top, margin_bottom)
 
 function pulseWidget.setColor(mute)
 	if mute then
@@ -208,6 +204,8 @@ buttonsTable = awful.util.table.join(
 		awful.button({ }, 5,  pulseWidget.minDown)
 	)
 pulseWidget:buttons(buttonsTable)
+pulseBox:buttons(buttonsTable)
+
 
 -- initialize
 _update()
