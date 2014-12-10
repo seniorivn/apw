@@ -16,6 +16,7 @@
 
 local awful = require("awful")
 local wibox = require("wibox")
+local naughty = require("naughty")
 local beautiful = require("beautiful")
 local pulseaudio = require("apw.pulseaudio")
 
@@ -51,6 +52,7 @@ width = beautiful.apw_width or width
 
 -- End of configuration
 
+local notid = 0
 local p = pulseaudio:Create()
 
 local pulseBar = awful.widget.progressbar()
@@ -60,7 +62,7 @@ pulseBar:set_width(width)
 pulseBar:set_vertical(true)
 pulseBar.step = step
 pulseBar.minstep = minstep
-    
+
 local pulseWidget = wibox.layout.margin(pulseBar, margin_right, margin_left, margin_top, margin_bottom)
 
 function pulseWidget.setColor(mute)
@@ -75,7 +77,7 @@ end
 
 local function _update()
 	pulseBar:set_value(p.Volume)
-	text= p.Perc 
+	text = p.Perc 
 	pulseBox:set_text(''..text..'')
 	pulseWidget.setColor(p.Mute)
 end
@@ -86,11 +88,13 @@ end
 
 function pulseWidget.Up()
 	p:SetVolume(p.Volume + pulseBar.step)
+	notid = naughty.notify({ text = 'Volume: '..p.Perc, replaces_id = notid }).id
 	_update()
 end	
 
 function pulseWidget.Down()
 	p:SetVolume(p.Volume - pulseBar.step)
+        notid = naughty.notify({ text = 'Volume: '..p.Perc, replaces_id = notid }).id
 	_update()
 end	
 
@@ -113,6 +117,10 @@ end
 
 function pulseWidget.ToggleMute()
 	p:ToggleMute()
+	local msg = {}
+	msg[false] = "Unmuted"
+	msg[true]  = "Muted"
+        notid = naughty.notify({ text = msg[p.Mute]..': '..p.Perc, replaces_id = notid }).id
 	_update()
 end
 
@@ -188,12 +196,12 @@ end
 
 -- register mouse button actions
 buttonsTable = awful.util.table.join(
-		awful.button({ }, 1, pulseWidget.LaunchVeromix),
+		awful.button({ }, 1,  pulseWidget.LaunchVeromix),
 		awful.button({ }, 12, pulseWidget.ToggleMute),
-		awful.button({ }, 2, pulseWidget.ToggleMute),
-		awful.button({ }, 3, pulseWidget.LaunchMixer),
-		awful.button({ }, 4, pulseWidget.minUp),
-		awful.button({ }, 5, pulseWidget.minDown)
+		awful.button({ }, 2,  pulseWidget.ToggleMute),
+		awful.button({ }, 3,  pulseWidget.LaunchMixer),
+		awful.button({ }, 4,  pulseWidget.minUp),
+		awful.button({ }, 5,  pulseWidget.minDown)
 	)
 pulseWidget:buttons(buttonsTable)
 pulseBox:buttons(buttonsTable)
