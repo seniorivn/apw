@@ -14,6 +14,12 @@
 -- You should have received a copy of the GNU General Public License
 -- along with APW. If not, see <http://www.gnu.org/licenses/>.
 
+local awful = require("awful")
+local wibox = require("wibox")
+local beautiful = require("beautiful")
+local pulseaudio = require("apw.pulseaudio")
+
+
 -- Configuration variables
 local width         = 10        -- width in pixels of progressbar
 local margin_right  = 0         -- right margin in pixels of progressbar 
@@ -31,12 +37,19 @@ local mixer_class   = 'Pavucontrol'
 local veromix	    = 'veromix' --veromix command
 local veromix_class = 'veromix'
 
--- End of configuration
+-- default configuration overridden by Beautiful theme
+color = beautiful.apw_fg_color or color
+color_bg = beautiful.apw_bg_color or color_bg
+color_mute = beautiful.apw_mute_fg_color or color_mute
+color_bg_mute = beautiful.apw_mute_bg_color or color_bg_mute
+margin_right = beautiful.apw_margin_right or margin_right
+margin_left = beautiful.apw_margin_left or margin_left
+margin_top = beautiful.apw_margin_top or margin_top
+margin_bottom = beautiful.apw_margin_bottom or margin_bottom
+width = beautiful.apw_width or width
 
-local awful = require("awful")
-local wibox = require("wibox")
-local beautiful = require("beautiful")
-local pulseaudio = require("apw.pulseaudio")
+
+-- End of configuration
 
 local p = pulseaudio:Create()
 
@@ -48,15 +61,7 @@ pulseBar:set_vertical(true)
 pulseBar.step = step
 pulseBar.minstep = minstep
     
-
-
 local pulseWidget = wibox.layout.margin(pulseBar, margin_right, margin_left, margin_top, margin_bottom)
-
--- default colors overridden by Beautiful theme
-color = beautiful.apw_fg_color or color
-color_bg = beautiful.apw_bg_color or color_bg
-color_mute = beautiful.apw_mute_fg_color or color_mute
-color_bg_mute = beautiful.apw_mute_bg_color or color_bg_mute
 
 function pulseWidget.setColor(mute)
 	if mute then
