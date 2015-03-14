@@ -28,8 +28,8 @@ local margin_top    = 1         -- top margin in pixels of progressbar
 local margin_bottom = 5         -- bottom margin in pixels of progressbar  
 local step          = 0.05      -- stepsize for volume change (ranges from 0 to 1)
 local minstep	    = 0.01	-- minimum stepsize for volume
-local color         = '#1a4b5c'--'#698f1e' -- foreground color of progessbar
-local color_bg      = '#0F1419'--'#33450f' -- background color
+local color         = "#888888" --'#698f1e' -- foreground color of progessbar'#1a4b5c'
+local color_bg      = "#343434" --'#33450f' -- background color'#0F1419'--
 local color_mute    = '#be2a15' -- foreground color when muted
 local color_bg_mute = color_bg --'#532a15' -- background color when muted
 local mixer         = 'pavucontrol' -- mixer command
@@ -187,16 +187,16 @@ end
 
 
 -- register mouse button actions
-buttonsTable = awful.util.table.join(
-		awful.button({ }, 1, pulseWidget.LaunchVeromix),
+pulseWidget.buttonsTable = awful.util.table.join(
+	--	awful.button({ }, 1, pulseWidget.LaunchVeromix),
 		awful.button({ }, 12, pulseWidget.ToggleMute),
 		awful.button({ }, 2, pulseWidget.ToggleMute),
-		awful.button({ }, 3, pulseWidget.LaunchMixer),
+	--	awful.button({ }, 3, pulseWidget.LaunchMixer),
 		awful.button({ }, 4, pulseWidget.minUp),
 		awful.button({ }, 5, pulseWidget.minDown)
 	)
-pulseWidget:buttons(buttonsTable)
-pulseBox:buttons(buttonsTable)
+pulseWidget:buttons(pulseWidget.buttonsTable)
+pulseBox:buttons(pulseWidget.buttonsTable)
 
 
 -- initialize
