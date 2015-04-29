@@ -67,8 +67,7 @@ function pulseaudio:UpdateState()
 	end
 
 	-- convert volume to percentages of volume
-	v = self.Volume*100
-	--print(v)
+	local v = self.Volume*100
 	self.Perc = round(v).."%"
 
 	-- retreive mute state of default sink

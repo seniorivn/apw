@@ -19,187 +19,174 @@ local wibox = require("wibox")
 local beautiful = require("beautiful")
 local pulseaudio = require("apw.pulseaudio")
 
+local pulsewidget = { mt = {} }
+p = pulseaudio:Create()
 
--- Configuration variables
-local width         = 10        -- width in pixels of progressbar
-local margin_right  = 0         -- right margin in pixels of progressbar 
-local margin_left   = 0         -- left margin in pixels of progressbar 
-local margin_top    = 1         -- top margin in pixels of progressbar 
-local margin_bottom = 5         -- bottom margin in pixels of progressbar  
-local step          = 0.05      -- stepsize for volume change (ranges from 0 to 1)
-local minstep	    = 0.01	-- minimum stepsize for volume
-local color         = "#888888" --'#698f1e' -- foreground color of progessbar'#1a4b5c'
-local color_bg      = "#343434" --'#33450f' -- background color'#0F1419'--
-local color_mute    = '#be2a15' -- foreground color when muted
-local color_bg_mute = color_bg --'#532a15' -- background color when muted
-local mixer         = 'pavucontrol' -- mixer command
-local mixer_class   = 'Pavucontrol'
-local veromix	    = 'veromix' --veromix command
-local veromix_class = 'veromix'
-
--- default configuration overridden by Beautiful theme
-color = beautiful.apw_fg_color or color
-color_bg = beautiful.apw_bg_color or color_bg
-color_mute = beautiful.apw_mute_fg_color or color_mute
-color_bg_mute = beautiful.apw_mute_bg_color or color_bg_mute
-margin_right = beautiful.apw_margin_right or margin_right
-margin_left = beautiful.apw_margin_left or margin_left
-margin_top = beautiful.apw_margin_top or margin_top
-margin_bottom = beautiful.apw_margin_bottom or margin_bottom
-width = beautiful.apw_width or width
-
-
--- End of configuration
-
-local p = pulseaudio:Create()
-
-local pulseBar = awful.widget.progressbar()
-local pulseBox = wibox.widget.textbox(1)
-
-pulseBar:set_width(width)
-pulseBar:set_vertical(true)
-pulseBar.step = step
-pulseBar.minstep = minstep
-    
-local pulseWidget = wibox.layout.margin(pulseBar, margin_right, margin_left, margin_top, margin_bottom)
-
-function pulseWidget.setColor(mute)
-	if mute then
-		pulseBar:set_color(color_mute)
-		pulseBar:set_background_color(color_bg_mute)
-	else
-		pulseBar:set_color(color)
-		pulseBar:set_background_color(color_bg)
+function pulsewidget:setcolor(mute)
+	if pulsewidget.progressbar then
+		if mute then
+			pulsewidget.progressbar:set_color(pulsewidget.color_mute)
+			pulsewidget.progressbar:set_background_color(pulsewidget.color_bg_mute)
+		else
+			pulsewidget.progressbar:set_color(pulsewidget.color)
+			pulsewidget.progressbar:set_background_color(pulsewidget.color_bg)
+		end
 	end
 end
 
 local function _update()
-	pulseBar:set_value(p.Volume)
+	if pulsewidget.progressbar then
+		pulsewidget.progressbar:set_value(p.Volume)
+	end
 	text= p.Perc 
-	pulseBox:set_text(''..text..'')
-	pulseWidget.setColor(p.Mute)
+	if pulsewidget.textbox then
+		print(text)
+		pulsewidget.textbox:set_text(''..text..'')
+	end
+	pulsewidget:setcolor(p.Mute)
 end
 
-function pulseWidget.SetMixer(command)
-	mixer = command
-end
-
-function pulseWidget.Up()
-	p:SetVolume(p.Volume + pulseBar.step)
+function pulsewidget.up()
+	p:SetVolume(p.Volume + pulsewidget.step)
 	_update()
 end	
 
-function pulseWidget.Down()
-	p:SetVolume(p.Volume - pulseBar.step)
+function pulsewidget.down()
+	p:SetVolume(p.Volume - pulsewidget.step)
 	_update()
 end	
 
-function pulseWidget.minUp()
-	p:SetVolume(p.Volume + pulseBar.minstep)
+function pulsewidget.minup()
+	p:SetVolume(p.Volume + pulsewidget.minstep)
 	if p.Mute then
-		pulseWidget.ToggleMute()
+		pulsewidget.togglemute()
 	end
 	_update()
 end	
 
-function pulseWidget.minDown()
-	p:SetVolume(p.Volume - pulseBar.minstep)
+function pulsewidget.mindown()
+	p:SetVolume(p.Volume - pulsewidget.minstep)
 	if p.Mute then
-		pulseWidget.ToggleMute()
+		pulsewidget.togglemute()
 	end
 	_update()
 end	
 
 
-function pulseWidget.ToggleMute()
+function pulsewidget.togglemute()
 	p:ToggleMute()
 	_update()
 end
 
-function pulseWidget.Update()
+function pulsewidget.update()
 	p:UpdateState()
 	 _update()
 end
 
-function pulseWidget.LaunchMixer()
-	run_or_kill(mixer,  { class = mixer_class })
-	_update()
-end
-
-function pulseWidget.LaunchVeromix()
-	run_or_kill(veromix, { class = veromix_class })
-	_update()	
-end
-
-
-
-function run_or_kill(cmd, properties)
-   local clients = client.get()
-   local focused = awful.client.next(0)
-   local findex = 0
-   local matched_clients = {}
-   local n = 0
-   for i, c in pairs(clients) do
-      --make an array of matched clients
-      if match(properties, c) then
-         n = n + 1
-         matched_clients[n] = c
-         if c == focused then
-            findex = n
-         end
-      end
-   end
-   if n > 0 then
-      local c = matched_clients[1]
-      -- if the focused window matched switch focus to next in list
-      if 0 < findex and findex < n then
-         c = matched_clients[findex+1]
-      end
-      local ctags = c:tags()
-      if #ctags == 0 then
-         -- ctags is empty, show client on current tag
-         local curtag = awful.tag.selected()
-         awful.client.movetotag(curtag, c)
-      else
-         -- Otherwise, pop to first tag client is visible on
-         awful.tag.viewonly(ctags[1])
-      end
-      -- And then kill the client
-      c:kill()
-      return
-   end
-   awful.util.spawn(cmd)
-end
-
--- Returns true if all pairs in table1 are present in table2
-local function match (table1, table2)
-   for k, v in pairs(table1) do
-      if table2[k] ~= v and not table2[k]:find(v) then
-         return false
-      end
-   end
-   return true
-end
-
-function pulseWidget.getTextBox()
-	return pulseBox
-end
-
-
--- register mouse button actions
-pulseWidget.buttonsTable = awful.util.table.join(
-	--	awful.button({ }, 1, pulseWidget.LaunchVeromix),
-		awful.button({ }, 12, pulseWidget.ToggleMute),
-		awful.button({ }, 2, pulseWidget.ToggleMute),
-	--	awful.button({ }, 3, pulseWidget.LaunchMixer),
-		awful.button({ }, 4, pulseWidget.minUp),
-		awful.button({ }, 5, pulseWidget.minDown)
+function pulsewidget:setbuttons(widget, args)
+	local args 	= args	      or {}
+	local mixer1 	= args.mixer1 or pulsewidget.mixer1
+	local mixer2 	= args.mixer2 or pulsewidget.mixer2
+	local mute 	= args.mute   or pulsewidget.togglemute
+	local minu 	= args.minu   or pulsewidget.minup
+	local mind 	= args.mind   or pulsewidget.mindown
+	local table 	= args.table  or {}
+	buttons = awful.util.table.join(
+		awful.button({ }, 1,  mixer1),
+		awful.button({ }, 12, mute),
+		awful.button({ }, 2,  mute),
+		awful.button({ }, 3,  mixer2),
+		awful.button({ }, 4,  minu),
+		awful.button({ }, 5,  mind)
 	)
-pulseWidget:buttons(pulseWidget.buttonsTable)
-pulseBox:buttons(pulseWidget.buttonsTable)
 
+	for i,k in pairs(table) do
+		awful.util.table.join(buttons, k)
+	end
+	widget:buttons(buttons)
+end
 
 -- initialize
-_update()
+local function new(args)
 
-return pulseWidget
+	-- Configuration variables
+	pulsewidget.width         	= args.width or beautiful.apw_width or 10        			-- width in pixels of progressbar
+	pulsewidget.margin_right  	= args.margin_right or beautiful.apw_margin_right or 0			-- right margin in pixels of progressbar 
+	pulsewidget.margin_left   	= args.margin_left or beautiful.apw_margin_left or 0			-- left margin in pixels of progressbar 
+	pulsewidget.margin_top    	= args.margin_top or beautiful.apw_margin_top or 1         		-- top margin in pixels of progressbar 
+	pulsewidget.margin_bottom 	= args.margin_bottom or beautiful.apw_margin_bottom or 5         	-- bottom margin in pixels of progressbar  
+	pulsewidget.step          	= args.step or 0.05      						-- stepsize for volume change (ranges from 0 to 1)
+	pulsewidget.minstep		= args.minstep or 0.01							-- minimum stepsize for volume
+	pulsewidget.color         	= args.color or beautiful.apw_fg_color or "#888888"  			--'#698f1e' -- foreground color of progessbar'#1a4b5c'
+	pulsewidget.color_bg      	= args.color_bg or beautiful.apw_bg_color or "#343434" 			--'#33450f' -- background color'#0F1419'--
+	pulsewidget.color_mute    	= args.color_mute or beautiful.apw_mute_fg_color or '#be2a15' 		-- foreground color when muted
+	pulsewidget.color_bg_mute 	= args.color_bg_mute or beautiful.apw_mute_bg_color or pulsewidget.color_bg 	--'#532a15' -- background color when muted
+	pulsewidget.mixer1	    	= args.mixer1 or function() print("mixer1") 
+		os.execute('veromix') end			-- function to run on 1 button
+	pulsewidget.mixer2       	= args.mixer2 or function() os.execute('pavucontrol') end		-- function to run on 3 button
+	pulsewidget.textbox 		= args.textbox 
+	pulsewidget.progressbar 	= args.progressbar 
+	pulsewidget.progressbar_vert	= args.progressbar_vert or true
+	pulsewidget.container		= args.container
+	pulsewidget.table		= args.table or {}
+	if pulsewidget.container == nil then
+		pulsewidget.container = wibox.layout.fixed.horizontal()
+	elseif pulsewidget.container == false then
+		pulsewidget.container = nil
+	elseif pulsewidget.container == true then
+		pulsewidget.container = wibox.layout.fixed.horizontal()
+	end
+	if pulsewidget.textbox == nil then
+		pulsewidget.textbox = wibox.widget.textbox("vol")
+	elseif pulsewidget.textbox == false then
+		pulsewidget.textbox = nil
+	elseif pulsewidget.textbox == true then
+		pulsewidget.textbox = wibox.widget.textbox("vol")
+	end
+	if pulsewidget.progressbar == nil then
+		pulsewidget.progressbar = awful.widget.progressbar()
+	elseif pulsewidget.progressbar == false then
+		pulsewidget.progressbar = nil
+	elseif pulsewidget.progressbar == true then
+		pulsewidget.progressbar = awful.widget.progressbar()
+	end
+
+	-- End of configuration
+
+	local function add(item, name)
+		if pulsewidget.container then
+			pulsewidget.container:add(item)
+		else
+			pulsewidget.table[name] = item
+		end
+	end
+
+	if pulsewidget.progressbar then
+		pulsewidget.progressbar:set_width(pulsewidget.width)
+		pulsewidget.progressbar:set_vertical(pulsewidget.progressbar_vert)
+		 
+		add(wibox.layout.margin(pulsewidget.progressbar, pulsewidget.margin_right, pulsewidget.margin_left, pulsewidget.margin_top, pulsewidget.margin_bottom), "progressbar")
+	end
+
+	if pulsewidget.textbox then
+		add(pulsewidget.textbox, "textbox")
+	end
+	pulsewidget.update()
+
+	if pulsewidget.container then
+		--pulsewidget.container:buttons(pulsewidget.buttons)
+		return pulsewidget.container
+	else
+		--for i,k in pairs(pulsewidget.table) do
+			--k:buttons(pulsewidget.buttons)
+		--end
+		return pulsewidget.table
+	end
+
+end
+
+function pulsewidget.mt:__call(...)
+    return new(...)
+end
+
+return setmetatable(pulsewidget, pulsewidget.mt)
