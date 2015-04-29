@@ -16,6 +16,7 @@
 
 local awful = require("awful")
 local wibox = require("wibox")
+local naughty = require("naughty")
 local beautiful = require("beautiful")
 local pulseaudio = require("apw.pulseaudio")
 
@@ -81,6 +82,58 @@ end
 function pulsewidget.update()
 	p:UpdateState()
 	 _update()
+end
+local notification = nil
+function pulsewidget:hide()
+	if notification ~= nil then
+		naughty.destroy(notification)
+		notification = nil
+	end
+end
+local function text_grabber()
+	--local f = io.popen("pacmd list-sinks") -- | grep -i 'index: 1' -A 50")
+	local str = "pacmd list-sinks | grep -i ".."'volume: f'".." | awk '{printf $5 "..'"\\'..'n"'.."}'"
+	print(str)
+	local volumes = io.popen(str)
+	local names = io.popen("pacmd list-sinks | grep -i ".."'profile.name'".." | awk '{printf $3 "..'"\\'..'n"'.."}'")
+	local mutes = io.popen("pacmd list-sinks | grep -i 'muted' ")
+	local vol = {}
+	local nm = {}
+	local mu = {}
+	for v in mutes:lines() do
+		table.insert(mu, v)
+	end
+	for v in names:lines() do
+		table.insert(nm, v)
+	end
+	for v in volumes:lines() do
+		table.insert(vol, v)
+	end
+	volumes:close()
+	names:close()
+	mutes:close()
+	local result = ""
+	for i,k in pairs(vol) do
+		result =result..nm[i].."       "..k..mu[i].."\n"
+	end
+	return result
+end
+
+function pulsewidget:show(t_out)
+	pulsewidget:hide()
+
+	notification = naughty.notify({
+		preset = fs_notification_preset,
+		text = text_grabber(),
+		timeout = t_out,
+		screen = mouse.screen,
+	})
+end
+function pulsewidget:attach(widget, args)
+	local args = args or {}
+
+	widget:connect_signal('mouse::enter', function () pulsewidget:show(0) end)
+	widget:connect_signal('mouse::leave', function () pulsewidget:hide() end)
 end
 
 function pulsewidget:setbuttons(widget, args)
