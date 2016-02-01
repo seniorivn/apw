@@ -90,10 +90,10 @@ function pulsewidget:hide()
 		notification = nil
 	end
 end
-local function text_grabber()
+function pulsewidget.text_grabber()
 	--local f = io.popen("pacmd list-sinks") -- | grep -i 'index: 1' -A 50")
 	local str = "pacmd list-sinks | grep -i ".."'volume: f'".." | awk '{printf $5 "..'"\\'..'n"'.."}'"
-	print(str)
+	--print(str)
 	local volumes = io.popen(str)
 	local names = io.popen("pacmd list-sinks | grep -i ".."'profile.name'".." | awk '{printf $3 "..'"\\'..'n"'.."}'")
 	local mutes = io.popen("pacmd list-sinks | grep -i 'muted' ")
@@ -124,7 +124,7 @@ function pulsewidget:show(t_out)
 
 	notification = naughty.notify({
 		preset = fs_notification_preset,
-		text = text_grabber(),
+		text = pulsewidget.text_grabber(),
 		timeout = t_out,
 		screen = mouse.screen,
 	})
@@ -174,14 +174,14 @@ local function new(args)
 	pulsewidget.color_bg      	= args.color_bg or beautiful.apw_bg_color or "#343434" 			--'#33450f' -- background color'#0F1419'--
 	pulsewidget.color_mute    	= args.color_mute or beautiful.apw_mute_fg_color or '#be2a15' 		-- foreground color when muted
 	pulsewidget.color_bg_mute 	= args.color_bg_mute or beautiful.apw_mute_bg_color or pulsewidget.color_bg 	--'#532a15' -- background color when muted
-	pulsewidget.mixer1	    	= args.mixer1 or function() print("mixer1") 
-		os.execute('veromix') end			-- function to run on 1 button
+	pulsewidget.mixer1	    	= args.mixer1 or function() os.execute('veromix') end			-- function to run on 1 button
 	pulsewidget.mixer2       	= args.mixer2 or function() os.execute('pavucontrol') end		-- function to run on 3 button
 	pulsewidget.textbox 		= args.textbox 
 	pulsewidget.progressbar 	= args.progressbar 
 	pulsewidget.progressbar_vert	= args.progressbar_vert or true
 	pulsewidget.container		= args.container
 	pulsewidget.table		= args.table or {}
+	pulsewidget.text_grabber	= args.text_grabber or pulsewidget.text_grabber
 	if pulsewidget.container == nil then
 		pulsewidget.container = wibox.layout.fixed.horizontal()
 	elseif pulsewidget.container == false then
